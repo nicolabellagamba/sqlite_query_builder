@@ -1,0 +1,3 @@
+enum WhereGroupType {
+  and, or
+}
