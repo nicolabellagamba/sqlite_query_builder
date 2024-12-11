@@ -15,6 +15,8 @@ class Where extends WhereElement {
 
   Where.equal({required this.column, required Object this.param}) : condition = Condition.equal;
 
+  Where.notEqual({required this.column, required Object this.param}) : condition = Condition.notEqual;
+
   Where.greater({required this.column, required Object this.param}) : condition = Condition.greater;
 
   Where.greaterOrEqual({required this.column, required Object this.param}) : condition = Condition.greaterOrEqual;
@@ -37,6 +39,10 @@ class Where extends WhereElement {
       : condition = Condition.isNotNull,
         param = null;
 
+  Where.inGroup({required this.column, required List<Object> this.param}) : condition = Condition.inGroup;
+
+    Where.notInGroup({required this.column, required List<Object> this.param}) : condition = Condition.inGroup;
+
   dynamic _maybeQuoteParam({required dynamic param}) => param is String ? '"$param"' : param;
 
   @override
@@ -45,14 +51,20 @@ class Where extends WhereElement {
 
     return '$column ${switch (condition) {
       Condition.equal => '= $maybeQuotedParam',
+      Condition.notEqual => '!= $maybeQuotedParam',
       Condition.greater => '> $maybeQuotedParam',
       Condition.greaterOrEqual => '>= $maybeQuotedParam',
       Condition.lower => '< $maybeQuotedParam',
       Condition.lowerOrEqual => '<= $maybeQuotedParam',
-      Condition.like => 'LIKE "$maybeQuotedParam"',
+      Condition.like => 'LIKE $maybeQuotedParam',
+      Condition.notLike => 'NOT LIKE $maybeQuotedParam',
       Condition.between => 'BETWEEN ${_maybeQuoteParam(param: param['lowerBound'])} AND ${_maybeQuoteParam(param: param['upperBound'])}',
       Condition.isNull => 'IS NULL',
       Condition.isNotNull => 'IS NOT NULL',
+      // TODO: Handle this case.
+      Condition.inGroup => throw UnimplementedError(),
+      // TODO: Handle this case.
+      Condition.notInGroup => throw UnimplementedError(),
     }}';
   }
 }

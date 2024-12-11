@@ -1,13 +1,15 @@
 enum Condition {
   equal,
+  notEqual,
   greater,
   greaterOrEqual,
   lower,
   lowerOrEqual,
   like,
+  notLike,
   between,
   isNull,
   isNotNull,
-  //in,
-  //notIn,
+  inGroup,
+  notInGroup,
 }
