@@ -1,6 +1,6 @@
 import 'package:sqlite_query_builder/enumerators/condition.dart';
 import 'package:sqlite_query_builder/enumerators/where_group_type.dart';
-import 'package:sqlite_query_builder/query_builder_exception.dart';
+import 'package:sqlite_query_builder/exceptions/query_builder_exception.dart';
 
 sealed class WhereElement {
   String writeClause();
@@ -41,13 +41,13 @@ class Where extends WhereElement {
 
   Where.inGroup({required this.column, required List<Object> this.param}) : condition = Condition.inGroup;
 
-    Where.notInGroup({required this.column, required List<Object> this.param}) : condition = Condition.inGroup;
+  Where.notInGroup({required this.column, required List<Object> this.param}) : condition = Condition.inGroup;
 
-  dynamic _maybeQuoteParam({required dynamic param}) => param is String ? '"$param"' : param;
+  dynamic _maybeQuoteParam(dynamic param) => param is String ? '"$param"' : param;
 
   @override
   String writeClause() {
-    final dynamic maybeQuotedParam = _maybeQuoteParam(param: param);
+    final dynamic maybeQuotedParam = _maybeQuoteParam(param);
 
     return '$column ${switch (condition) {
       Condition.equal => '= $maybeQuotedParam',
@@ -58,13 +58,11 @@ class Where extends WhereElement {
       Condition.lowerOrEqual => '<= $maybeQuotedParam',
       Condition.like => 'LIKE $maybeQuotedParam',
       Condition.notLike => 'NOT LIKE $maybeQuotedParam',
-      Condition.between => 'BETWEEN ${_maybeQuoteParam(param: param['lowerBound'])} AND ${_maybeQuoteParam(param: param['upperBound'])}',
+      Condition.between => 'BETWEEN ${_maybeQuoteParam(param['lowerBound'])} AND ${_maybeQuoteParam(param['upperBound'])}',
       Condition.isNull => 'IS NULL',
       Condition.isNotNull => 'IS NOT NULL',
-      // TODO: Handle this case.
-      Condition.inGroup => throw UnimplementedError(),
-      // TODO: Handle this case.
-      Condition.notInGroup => throw UnimplementedError(),
+      Condition.inGroup => 'IN (${(param as List<dynamic>).map(_maybeQuoteParam).join(', ')})',
+      Condition.notInGroup => 'NOT IN (${(param as List<dynamic>).map(_maybeQuoteParam).join(', ')})',
     }}';
   }
 }

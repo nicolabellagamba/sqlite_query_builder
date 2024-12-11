@@ -14,7 +14,7 @@ void main() {
         join: InnerJoin(
           tableName: 'table_2',
           tableAlias: 't2',
-          joinClause: JoinClause(
+          joinCondition: JoinCondition(
             firstColumn: 't1.column_1',
             secondColumn: 't2.column_2',
           ),
