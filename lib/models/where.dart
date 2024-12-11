@@ -1,9 +1,9 @@
 import 'package:sqlite_query_builder/enumerators/condition.dart';
 import 'package:sqlite_query_builder/enumerators/where_group_type.dart';
 import 'package:sqlite_query_builder/exceptions/query_builder_exception.dart';
+import 'package:sqlite_query_builder/interfaces/query_part_interface.dart';
 
-sealed class WhereElement {
-  String writeClause();
+sealed class WhereElement implements QueryPartInterface {
 }
 
 class Where extends WhereElement {
@@ -46,7 +46,7 @@ class Where extends WhereElement {
   dynamic _maybeQuoteParam(dynamic param) => param is String ? '"$param"' : param;
 
   @override
-  String writeClause() {
+  String writeQuery() {
     final dynamic maybeQuotedParam = _maybeQuoteParam(param);
 
     return '$column ${switch (condition) {
@@ -76,11 +76,11 @@ class WhereGroup extends WhereElement {
   WhereGroup.or({this.clauses = const []}) : type = WhereGroupType.or;
 
   @override
-  String writeClause() {
+  String writeQuery() {
     if (clauses.isEmpty) {
       throw QueryBuilderException('Attempting to write an empty where $type group');
     }
 
-    return '(${clauses.map((WhereElement clause) => clause.writeClause()).join(' ${type.name.toUpperCase()} ')})';
+    return '(${clauses.map((WhereElement clause) => clause.writeQuery()).join(' ${type.name.toUpperCase()} ')})';
   }
 }

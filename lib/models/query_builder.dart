@@ -1,18 +1,22 @@
 import 'package:sqlite_query_builder/enumerators/order.dart';
-import 'package:sqlite_query_builder/enumerators/query_type.dart';
+import 'package:sqlite_query_builder/exceptions/query_builder_exception.dart';
 import 'package:sqlite_query_builder/models/join.dart';
 import 'package:sqlite_query_builder/models/order_by.dart';
+import 'package:sqlite_query_builder/models/table.dart';
 import 'package:sqlite_query_builder/models/where.dart';
 
 class QueryBuilder {
-  final QueryType _type;
+  List<String> _selectList = [];
+  Table? _table;
   final List<Join> _joinList = [];
   WhereElement? _clause;
   final List<OrderBy> _orderByList = [];
   final List<String> _groupByList = [];
   int? _limit;
 
-  QueryBuilder.select() : _type = QueryType.select;
+  void from({required Table table}) {
+    _table = table;
+  }
 
   void addJoin({required Join join}) {
     _joinList.add(join);
@@ -31,12 +35,13 @@ class QueryBuilder {
   }
 
   String writeQuery() {
-    String queryString = switch (_type) {
-      QueryType.select => '',
-      QueryType.insert => throw UnimplementedError(),
-      QueryType.update => throw UnimplementedError(),
-      QueryType.delete => throw UnimplementedError(),
-    };
+    String queryString = 'SELECT ${_selectList.isNotEmpty ? _selectList.join(', ') : '*'}';
+
+    if (null != _table) {
+      queryString += ' FROM ${_table!.writeQuery()}';
+    } else {
+      throw QueryBuilderException('No table supplied, query cannot be executed.');
+    }
 
     if (_joinList.isNotEmpty) {
       queryString += _joinList.map((Join join) {
@@ -44,13 +49,13 @@ class QueryBuilder {
           InnerJoin() => 'INNER JOIN',
           LeftJoin() => 'LEFT JOIN',
           RightJoin() => 'RIGHT JOIN',
-        }} ${join.tableName}${null != join.tableAlias ? ' AS ${join.tableAlias}' : ''} ON ${join.joinCondition.writeClause()}';
+        }} ${join.table.name}${null != join.table.alias ? ' AS ${join.table.alias}' : ''} ON ${join.joinCondition.writeQuery()}';
       }).join(' ');
     }
 
     // add where clause to query string if set.
     if (null != _clause) {
-      queryString += ' WHERE ${_clause!.writeClause()}';
+      queryString += ' WHERE ${_clause!.writeQuery()}';
     }
 
     // add order by part to query string.

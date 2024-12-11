@@ -3,17 +3,18 @@ import 'package:sqlite_query_builder/enumerators/order.dart';
 import 'package:sqlite_query_builder/models/join.dart';
 import 'package:sqlite_query_builder/models/join_condition.dart';
 import 'package:sqlite_query_builder/models/query_builder.dart';
+import 'package:sqlite_query_builder/models/table.dart';
 import 'package:sqlite_query_builder/models/where.dart';
 
 void main() {
   test('check query builder write method', () {
-    final QueryBuilder queryBuilder = QueryBuilder.select();
+    final QueryBuilder queryBuilder = QueryBuilder();
 
     queryBuilder
+      ..from(table: Table(name: 'table_1', alias: 't1'))
       ..addJoin(
         join: InnerJoin(
-          tableName: 'table_2',
-          tableAlias: 't2',
+          table: Table(name: 'table_2', alias: 't2'),
           joinCondition: JoinCondition(
             firstColumn: 't1.column_1',
             secondColumn: 't2.column_2',
