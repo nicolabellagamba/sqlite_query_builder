@@ -1,18 +1,25 @@
 import 'package:sqlite_query_builder/enumerators/order.dart';
 import 'package:sqlite_query_builder/exceptions/query_builder_exception.dart';
+import 'package:sqlite_query_builder/models/column.dart';
 import 'package:sqlite_query_builder/models/join.dart';
 import 'package:sqlite_query_builder/models/order_by.dart';
 import 'package:sqlite_query_builder/models/table.dart';
 import 'package:sqlite_query_builder/models/where.dart';
 
 class QueryBuilder {
-  List<String> _selectList = [];
+  bool _distinct = false;
+  final List<dynamic> _columns = [];
   Table? _table;
   final List<Join> _joinList = [];
   WhereElement? _clause;
   final List<OrderBy> _orderByList = [];
   final List<String> _groupByList = [];
   int? _limit;
+
+  void select({List<dynamic> columns = const [], bool distinct = false}) {
+    _columns.addAll(columns);
+    _distinct = distinct;
+  }
 
   void from({required Table table}) {
     _table = table;
@@ -35,7 +42,17 @@ class QueryBuilder {
   }
 
   String writeQuery() {
-    String queryString = 'SELECT ${_selectList.isNotEmpty ? _selectList.join(', ') : '*'}';
+    String queryString = 'SELECT';
+
+    if (_distinct) {
+      queryString += ' DISTINCT';
+    }
+
+    queryString += _columns.isNotEmpty ? _columns.map((dynamic element) => switch (element.runtimeType) {
+      const (String) => element,
+      const (Column) => (element as Column).writeQuery(),
+      _ => throw QueryBuilderException('${element.runtimeType} is not supported.'),
+    }).join(', ') : '*';
 
     if (null != _table) {
       queryString += ' FROM ${_table!.writeQuery()}';
