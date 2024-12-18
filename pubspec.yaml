@@ -1,5 +1,5 @@
 name: sqlite_query_builder
-description: "A new Flutter package project."
+description: "Package that helps building sqlite queries."
 version: 0.0.1
 homepage:
 

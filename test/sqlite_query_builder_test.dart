@@ -4,7 +4,7 @@ import 'package:sqlite_query_builder/models/join.dart';
 import 'package:sqlite_query_builder/models/join_condition.dart';
 import 'package:sqlite_query_builder/models/query_builder.dart';
 import 'package:sqlite_query_builder/models/table.dart';
-import 'package:sqlite_query_builder/models/where.dart';
+import 'package:sqlite_query_builder/models/conditions.dart';
 
 void main() {
   test('check query builder write method', () {
@@ -21,14 +21,14 @@ void main() {
           ),
         ),
       )
-      ..setClause(
-        clause: WhereGroup.and(
+      ..where(
+        where: ConditionGroup.and(
           clauses: [
-            Where.equal(column: 'test', param: 12),
-            WhereGroup.or(clauses: [
-              Where.greater(column: 'test_1', param: 46),
-              Where.greater(column: 'test_1', param: '47'),
-              Where.between(column: 'test_4', lowerBound: 34, upperBound: 'tre')
+            Condition.equal(column: 'test', param: 12),
+            ConditionGroup.or(clauses: [
+              Condition.greater(column: 'test_1', param: 46),
+              Condition.greater(column: 'test_1', param: '47'),
+              Condition.between(column: 'test_4', lowerBound: 34, upperBound: 'tre')
             ]),
           ],
         ),

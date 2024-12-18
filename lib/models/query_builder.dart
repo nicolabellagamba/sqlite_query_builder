@@ -1,19 +1,20 @@
 import 'package:sqlite_query_builder/enumerators/order.dart';
 import 'package:sqlite_query_builder/exceptions/query_builder_exception.dart';
 import 'package:sqlite_query_builder/models/column.dart';
+import 'package:sqlite_query_builder/models/conditions.dart';
 import 'package:sqlite_query_builder/models/join.dart';
 import 'package:sqlite_query_builder/models/order_by.dart';
 import 'package:sqlite_query_builder/models/table.dart';
-import 'package:sqlite_query_builder/models/where.dart';
 
 class QueryBuilder {
   bool _distinct = false;
   final List<dynamic> _columns = [];
   Table? _table;
   final List<Join> _joinList = [];
-  WhereElement? _clause;
+  BaseCondition? _where;
   final List<OrderBy> _orderByList = [];
   final List<String> _groupByList = [];
+  BaseCondition? _having;
   int? _limit;
 
   void select({List<dynamic> columns = const [], bool distinct = false}) {
@@ -29,12 +30,20 @@ class QueryBuilder {
     _joinList.add(join);
   }
 
-  void setClause({required WhereElement clause}) {
-    _clause = clause;
+  void where({required BaseCondition where}) {
+    _where = where;
   }
 
   void addOrderBy({required String column, Order order = Order.asc}) {
     _orderByList.add(OrderBy(column: column, order: order));
+  }
+
+  void addGroupBy({required String column}) {
+    _groupByList.add(column);
+  }
+
+  void having({required BaseCondition having}) {
+    _having = having;
   }
 
   void setLimit({required int limit}) {
@@ -48,11 +57,15 @@ class QueryBuilder {
       queryString += ' DISTINCT';
     }
 
-    queryString += _columns.isNotEmpty ? _columns.map((dynamic element) => switch (element.runtimeType) {
-      const (String) => element,
-      const (Column) => (element as Column).writeQuery(),
-      _ => throw QueryBuilderException('${element.runtimeType} is not supported.'),
-    }).join(', ') : '*';
+    queryString += _columns.isNotEmpty
+        ? _columns
+            .map((dynamic element) => switch (element.runtimeType) {
+                  const (String) => element,
+                  const (Column) => (element as Column).writeQuery(),
+                  _ => throw QueryBuilderException('${element.runtimeType} is not supported.'),
+                })
+            .join(', ')
+        : '*';
 
     if (null != _table) {
       queryString += ' FROM ${_table!.writeQuery()}';
@@ -71,8 +84,8 @@ class QueryBuilder {
     }
 
     // add where clause to query string if set.
-    if (null != _clause) {
-      queryString += ' WHERE ${_clause!.writeQuery()}';
+    if (null != _where) {
+      queryString += ' WHERE ${_where!.writeQuery()}';
     }
 
     // add order by part to query string.
@@ -83,6 +96,11 @@ class QueryBuilder {
     // add group by part to query string.
     if (_groupByList.isNotEmpty) {
       queryString += 'GROUP BY ${_groupByList.join(', ')}';
+    }
+
+    // add having clause to query string if set.
+    if (null != _having) {
+      queryString += ' HAVING ${_where!.writeQuery()}';
     }
 
     // add limit to query string.

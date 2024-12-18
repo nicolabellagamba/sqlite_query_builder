@@ -1,4 +1,4 @@
-enum Condition {
+enum ConditionType {
   equal,
   notEqual,
   greater,
