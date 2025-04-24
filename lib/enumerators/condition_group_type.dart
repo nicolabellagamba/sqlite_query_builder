@@ -1,4 +1,1 @@
-enum ConditionGroupType {
-  and,
-  or,
-}
+enum ConditionGroupType { and, or, }

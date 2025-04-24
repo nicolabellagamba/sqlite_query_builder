@@ -1,1 +1,4 @@
-enum Order { asc, desc }
+enum Order {
+  asc,
+  desc,
+}
